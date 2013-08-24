@@ -8,7 +8,7 @@ module Decoder(
         en = 0;
         if(WEN)begin
             casez(wsel)
-                00: en[00] = 2'b1;
+                00: en[00] = 2'b0;  // location 0 has constant 0 value
                 01: en[01] = 2'b1;
                 02: en[02] = 2'b1;
                 03: en[03] = 2'b1;
