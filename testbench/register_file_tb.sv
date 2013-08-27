@@ -1,6 +1,6 @@
 /*
-	Eric Villasenor
-	evillase@gmail.com
+	Mingfei Huang
+	huang243@purdue.edu
 
 	register file test bench
 */
@@ -29,7 +29,7 @@ module register_file_tb;
 	register_file_if rfif ();
 	// DUT
 `ifndef MAPPED
-	register_file DUT(CLK, nRST, rfif);
+	register_file DUT(rfif , CLK, nRST);
 `else
 	register_file DUT(
 		.\rfif.rdat2 (rfif.rdat2),
