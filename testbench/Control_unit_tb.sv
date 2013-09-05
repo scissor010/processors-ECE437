@@ -22,7 +22,7 @@ module Control_unit_tb;
 	register_file_if rfif();
 
 
-	Control_unit CU_DUT(CLK,nRST,rfif);
+	Control_unit CU_DUT(rfif);
 	Alu ALU_DUT(rfif);
 	register_file REG_DUT(rfif , CLK , nRST);
 

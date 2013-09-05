@@ -32,17 +32,12 @@ interface register_file_if;
 	word_t dmemaddr;
 	word_t imemload;
 	word_t dmemload;
-
+	word_t PCnxt;
 
 	//alu part
 	word_t oprnd1 , oprnd2 , alurst;
 	logic [3:0] alucode;
 	logic vldflg , cryflg , ngtflg , zroflg;
-
-	modport fi(
-		input PC,
-		output imemload
-	);
 
 	modport alu(
 		input oprnd1 , oprnd2 , alucode,
@@ -56,9 +51,10 @@ interface register_file_if;
 		alurst,		// from alu
 		vldflg , cryflg , ngtflg , zroflg, // alu flags
 		imemload, dmemload,		// from datapath/memory
-		output rWEN , wsel , rsel1 , rsel2 , wdat,	// to register file
+		PC,						// from datapath/memory
+		output rWEN , wsel , rsel1 , rsel2 , wdat,	//	 to register file
 		oprnd1 , oprnd2 , alucode,		// to alu
-		imemREN, dmemREN, dmemWEN, dmemstore, PC, dmemaddr	// to datapath/memory
+		imemREN, dmemREN, dmemWEN, dmemstore, dmemaddr, PCnxt	// to datapath/memory
 	);
 
 	// register file ports

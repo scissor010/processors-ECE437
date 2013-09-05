@@ -21,22 +21,23 @@ module datapath_tb;
 
 	datapath DP_DUT(CLK , nRST , dpif);
 
+	// fake stuff
+	fake_imem FI_DUT(dpif);
+
 	// not used
 	assign dpif.ihit = 1'b0;
 	assign dpif.dhit = 1'b0;
-
-	int num = 0;
-
+/*
 	logic [5:0] op;
 	logic [4:0] rs;
 	logic [4:0] rt;
 	logic [4:0] rd;
 	logic [4:0] sa;
 	logic [5:0] spe;
-
+*/
 //	assign imm = {rd , sa , spe};
 
-	assign dpif.imemload = {op , rs , rt , rd , sa , spe};
+//	assign dpif.imemload = {op , rs , rt , rd , sa , spe};
 
 	parameter PERIOD = 10;
 
@@ -47,12 +48,16 @@ module datapath_tb;
 		CLK = 1;
 	end
 
+	initial begin
+		nRST = 0;
+		#PERIOD;
+		nRST = 1;
+	end
 
 	initial begin
-
-		num = 0;
+		//#(PERIOD);
 		$monitor("
-%d
+PC:%d
 reg%d:  %d:%b
 reg%d:  %d:%b
 reg%d:  %d:%b
@@ -61,18 +66,17 @@ reg%d:  %d:%b
 reg%d:  %d:%b
 dmemstore=%b
 dmemaddr= %b
-opcode	= %b
-spe		= %b
 imemREN = %b
 dmemREN = %b
 dmemWEN = %b"
-, num
+, dpif.imemaddr
 , 00 , DP_DUT.regfile.data[00] , DP_DUT.regfile.data[00]
 , 01 , DP_DUT.regfile.data[01] , DP_DUT.regfile.data[01]
 , 02 , DP_DUT.regfile.data[02] , DP_DUT.regfile.data[02]
 , 03 , DP_DUT.regfile.data[03] , DP_DUT.regfile.data[03]
 , 04 , DP_DUT.regfile.data[04] , DP_DUT.regfile.data[04]
-, 05 , DP_DUT.regfile.data[05] , DP_DUT.regfile.data[05]/*
+, 05 , DP_DUT.regfile.data[05] , DP_DUT.regfile.data[05]
+/*
 , 06 , DP_DUT.regfile.data[06] , DP_DUT.regfile.data[06]
 , 07 , DP_DUT.regfile.data[07] , DP_DUT.regfile.data[07]
 , 08 , DP_DUT.regfile.data[08] , DP_DUT.regfile.data[08]
@@ -101,13 +105,11 @@ dmemWEN = %b"
 , 31 , DP_DUT.regfile.data[31] , DP_DUT.regfile.data[31]*/
 , dpif.dmemstore
 , dpif.dmemaddr
-, op
-, spe
 , dpif.imemREN
 , dpif.dmemREN
 , dpif.dmemWEN);
 
-
+/*
 		op = 0;
 		rs = 0;
 		rt = 0;
@@ -246,7 +248,7 @@ dmemWEN = %b"
 		$display("pc:%d" , dpif.imemaddr);
 		#(PERIOD);
 		$display("pc:%d" , dpif.imemaddr);
-
+*/
 	end
 
 endmodule

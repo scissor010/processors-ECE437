@@ -28,6 +28,16 @@ module datapath (
 	// start from here is personal code
 
 	register_file_if rfif();
+	word_t PC;	// pc current state
+	assign rfif.PC = PC;
+	// program counter stuff
+	always_ff@(posedge CLK or negedge nRST) begin
+		if(~nRST) begin
+			PC <= 0;
+		end else begin
+			PC <= rfif.PCnxt;
+		end
+	end
 
 	register_file regfile(
 		rfif,
@@ -35,9 +45,9 @@ module datapath (
 		nRST
 	);
 	Alu alu(rfif);
-	Control_unit CU(CLK , nRST , rfif);
+	Control_unit CU(rfif);
 
-	assign dpif.imemaddr = rfif.PC;
+	assign dpif.imemaddr = PC;
 
 	assign rfif.inst		= dpif.imemload;
 	assign rfif.dmemload	= dpif.dmemload;
