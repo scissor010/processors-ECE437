@@ -13,23 +13,20 @@
 
 # ini program
 multwo:
-	pop	$1
+	
+	lw	$1,	$29,	4
+	sw	$2,	$29,	4	#$2
+
+	lw	$2,	$29,	8
+	sw	$3,	$29,	8	#$3
+
+	lw	$3,	$29,	12
+	sw	$4,	$29,	12	#$4
+
+	lw	$4,	$29,	16
+	sw	$5,	$29,	16	#$5
 
 	
-
-	addu 	$1,	$2,	$0
-	pop	$2
-	push	$1	#$2
-
-	addu 	$1,	$3,	$0
-	pop	$3
-	push	$1	#$3
-
-	push	$31	#$31
-	
-	push	$4	#$4
-	push	$5	#$5
-
 
 	# start of actual program
 	and	$5,	$0,	$5 # clear $5

@@ -30,12 +30,49 @@ module fake_imem(datapath_cache_if.fi dpif);
 		rd = 0;
 		sa = 0;
 		spe = 0;
-
 		casez(dpif.imemaddr)
-			32'h00:begin{op,rs,rt,rd,sa,spe}=32'h2401000c;end
-			32'h04:begin{op,rs,rt,rd,sa,spe}=32'h2421ffff;end
-			32'h08:begin{op,rs,rt,rd,sa,spe}=32'h1001fffe;end
-			32'h0C:begin{op,rs,rt,rd,sa,spe}=32'hffffffff;end
+32'h00:{op,rs,rt,rd,sa,spe}=32'h241D0FFC;
+32'h04:{op,rs,rt,rd,sa,spe}=32'h0C00000A;
+32'h08:{op,rs,rt,rd,sa,spe}=32'h24010011;
+32'h0C:{op,rs,rt,rd,sa,spe}=32'h27BDFFFC;
+32'h10:{op,rs,rt,rd,sa,spe}=32'hAFA10000;
+32'h14:{op,rs,rt,rd,sa,spe}=32'h24010003;
+32'h18:{op,rs,rt,rd,sa,spe}=32'h27BDFFFC;
+32'h1C:{op,rs,rt,rd,sa,spe}=32'hAFA10000;
+32'h20:{op,rs,rt,rd,sa,spe}=32'h0C00000A;
+32'h24:{op,rs,rt,rd,sa,spe}=32'hFFFFFFFF;
+32'h28:{op,rs,rt,rd,sa,spe}=32'h27A10000;
+32'h2C:{op,rs,rt,rd,sa,spe}=32'h27BDFFFC;
+32'h30:{op,rs,rt,rd,sa,spe}=32'hAFBF0000;
+32'h34:{op,rs,rt,rd,sa,spe}=32'h27BDFFFC;
+32'h38:{op,rs,rt,rd,sa,spe}=32'hAFA20000;
+32'h3C:{op,rs,rt,rd,sa,spe}=32'h27BDFFFC;
+32'h40:{op,rs,rt,rd,sa,spe}=32'hAFA30000;
+32'h44:{op,rs,rt,rd,sa,spe}=32'h27BDFFFC;
+32'h48:{op,rs,rt,rd,sa,spe}=32'hAFA40000;
+32'h4C:{op,rs,rt,rd,sa,spe}=32'h27BDFFFC;
+32'h50:{op,rs,rt,rd,sa,spe}=32'hAFA50000;
+32'h54:{op,rs,rt,rd,sa,spe}=32'h8C220000;
+32'h58:{op,rs,rt,rd,sa,spe}=32'h8C230004;
+32'h5C:{op,rs,rt,rd,sa,spe}=32'h00052824;
+32'h60:{op,rs,rt,rd,sa,spe}=32'h30640001;
+32'h64:{op,rs,rt,rd,sa,spe}=32'h10800001;
+32'h68:{op,rs,rt,rd,sa,spe}=32'h00A22821;
+32'h6C:{op,rs,rt,rd,sa,spe}=32'h00401040;
+32'h70:{op,rs,rt,rd,sa,spe}=32'h00601842;
+32'h74:{op,rs,rt,rd,sa,spe}=32'h1403FFFA;
+32'h78:{op,rs,rt,rd,sa,spe}=32'hAC250004;
+32'h7C:{op,rs,rt,rd,sa,spe}=32'h8FA50000;
+32'h80:{op,rs,rt,rd,sa,spe}=32'h27BD0004;
+32'h84:{op,rs,rt,rd,sa,spe}=32'h8FA40000;
+32'h88:{op,rs,rt,rd,sa,spe}=32'h27BD0004;
+32'h8C:{op,rs,rt,rd,sa,spe}=32'h8FA30000;
+32'h90:{op,rs,rt,rd,sa,spe}=32'h27BD0004;
+32'h94:{op,rs,rt,rd,sa,spe}=32'h8FA20000;
+32'h98:{op,rs,rt,rd,sa,spe}=32'h27BD0004;
+32'h9C:{op,rs,rt,rd,sa,spe}=32'h8FBF0000;
+32'hA0:{op,rs,rt,rd,sa,spe}=32'h27BD0004;
+32'hA4:{op,rs,rt,rd,sa,spe}=32'h03E00008;
 		endcase
 		/*casez(dpif.imemaddr)
 			default:begin
