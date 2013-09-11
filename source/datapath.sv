@@ -31,13 +31,37 @@ module datapath (
 	word_t PC;	// pc current state
 	assign rfif.PC = PC;
 	// program counter stuff
+	word_t PCtemp;
+	assign PCtemp = rfif.instEN?rfif.PCnxt:PC;
 	always_ff@(posedge CLK or negedge nRST) begin
 		if(~nRST) begin
-			PC <= 0;
+			PC <= PC_INIT;
 		end else begin
-			PC <= rfif.PCnxt;
+			PC <= PCtemp;
 		end
 	end
+
+	logic haltff;
+	always_ff@(negedge CLK or negedge nRST) begin
+		if(~nRST/* & ~rfif.halt*/) begin
+				haltff <= 0;
+		end else begin
+			if(rfif.halt =='1)begin
+				haltff <= 1;
+			end
+		end
+	end
+	logic talh;
+	always_ff@(negedge CLK or negedge nRST) begin
+		if(~nRST) begin
+				talh <= 0;
+		end else begin
+			if(haltff =='1)begin
+				talh <= 1;
+			end
+		end
+	end
+
 
 	register_file regfile(
 		rfif,
@@ -46,10 +70,11 @@ module datapath (
 	);
 	Alu alu(rfif);
 	Control_unit CU(rfif);
+	hazard_unit HU(CLK , nRST , rfif);
 
 	assign dpif.imemaddr = PC;
 
-	assign rfif.inst		= dpif.imemload;
+	assign rfif.imemload	= dpif.imemload;
 	assign rfif.dmemload	= dpif.dmemload;
 
 	assign dpif.imemREN		= rfif.imemREN;
@@ -62,8 +87,9 @@ module datapath (
 
 
 	assign dpif.datomic		= 1'bx;		// to be filled later
-	assign dpif.halt		= 1'bx;
+	assign dpif.halt		= talh;//haltff & nRST;
 
-
+	assign rfif.dhit = dpif.dhit;
+	assign rfif.ihit = dpif.ihit;
 
 endmodule

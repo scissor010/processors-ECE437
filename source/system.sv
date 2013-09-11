@@ -36,4 +36,6 @@ module system (input logic CLK, nRST, system_if.sys syif);
 	assign prif.ramaddr = (syif.tbCTRL) ? syif.addr : prif.memaddr;
 	assign prif.ramstore = (syif.tbCTRL) ? syif.store : prif.memstore;
 
+	assign syif.testPC = prif.testPC;
+
 endmodule

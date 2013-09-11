@@ -19,17 +19,19 @@ module Control_unit(register_file_if.cu rfif);
 	logic [25:0] JumpAddr;
 	logic [15:0] offset;
 	logic [5:0] rcode;
+	logic [31:0] immext;
 
+	assign opcode = rfif.imemload[31:26];
+	assign rs = rfif.imemload[25:21];
+	assign rt = rfif.imemload[20:16];
+	assign rd = rfif.imemload[15:11];
+	assign sa = rfif.imemload[10:06];
+	assign imm = rfif.imemload[15:0];
+	assign JumpAddr = rfif.imemload[25:0];
+	assign offset = rfif.imemload[15:0];
+	assign rcode = rfif.imemload[5:0];
 
-	assign opcode = rfif.inst[31:26];
-	assign rs = rfif.inst[25:21];
-	assign rt = rfif.inst[20:16];
-	assign rd = rfif.inst[15:11];
-	assign sa = rfif.inst[10:06];
-	assign imm = rfif.inst[15:0];
-	assign JumpAddr = rfif.inst[25:0];
-	assign offset = rfif.inst[15:0];
-	assign rcode = rfif.inst[5:0];
+	assign immext = imm[15]?{16'hffff,imm}:{16'b0,imm};
 
 	word_t PC4 , PCelse;
 	logic PC4EN;
@@ -49,12 +51,13 @@ module Control_unit(register_file_if.cu rfif);
 		rfif.wdat = 'bx;
 		rfif.dmemaddr = 'bx;
 
-		rfif.imemREN = 0;
-		rfif.dmemREN = 0;
-		rfif.dmemWEN = 0;
+		// rfif.cu_imemREN = 0;// probably not needed for this unit
+		rfif.cu_dmemREN = 0;
+		rfif.cu_dmemWEN = 0;
 		rfif.rWEN = 0;
 
 		rfif.dmemstore = 32'dx;	// only SW uses dememstore
+		rfif.halt = 0;
 		casez(opcode)
 		// alu r type instructions
 		RTYPE:begin
@@ -222,59 +225,41 @@ module Control_unit(register_file_if.cu rfif);
 		end
 
 		// not alu insts
-			LUI:begin		// GPR[rt] ← immediate || 0*16
-				rfif.wsel = rt;
-				rfif.wdat = {imm , 16'b0};
-				rfif.rWEN = 1;
-			end
-
 			SW:begin			// M[R[rs] + SignExtImm] <= R[rt]
-				// read R[rt]
-				rfif.rsel1 = rt;
 				// read R[rs]
-				rfif.rsel2 = rs;
+				rfif.rsel1 = rs;
+				// read R[rt]
+				rfif.rsel2 = rt;
 
 				// use alu to calc address
-				rfif.oprnd1 = rfif.rdat2;
+				rfif.oprnd1 = rfif.rdat1;
 				rfif.dmemaddr = rfif.alurst;
 				rfif.alucode = ALU_ADD;
-				rfif.dmemstore = rfif.rdat1;	// only SW uses dememstore
+				rfif.dmemstore = rfif.rdat2;	// only SW uses dememstore
 
-				if(imm[15] == 1'b1)begin	// sign ext
-				//	rfif.dmemaddr = rfif.rdat2 + {16'b1111111111111111 , imm};
-				// use alu instead
-					rfif.oprnd2 = {16'b1111111111111111 , imm};
-				end else begin
-				//	rfif.oprnd2 = rfif.rdat2 + {16'b0 , imm};
-					rfif.oprnd2 = {16'b0 , imm};
-				end
-				rfif.dmemWEN = 1;
+			//	rfif.oprnd2 = {16{imm[15]} ,  imm};
+				rfif.oprnd2 = immext;
+				rfif.cu_dmemWEN = 1;
 			end
 
 			LW:begin			// R[rt] <= M[R[rs] + SignExtImm]
 				// read R[rt] R[rs]
-				rfif.rsel1 = rt;
-				rfif.rsel2 = rs;
-
+				rfif.rsel1 = rs;
+				rfif.wsel = rt;
 				// use alu to calc address
-				rfif.oprnd2 = rfif.rdat2;
+				rfif.oprnd1 = rfif.rdat1;
 				rfif.dmemaddr = rfif.alurst;
 				rfif.alucode = ALU_ADD;
-				if(imm[15] == 1'b1)begin
-					rfif.oprnd1 = {16'b1111111111111111 , imm};
-				end else begin
-					rfif.oprnd1 = {16'b0 , imm};
-				end
+				rfif.oprnd2 = immext;
 				rfif.wdat = rfif.dmemload;
 				rfif.rWEN = 1;
-				rfif.dmemREN = 1;
+				rfif.cu_dmemREN = 1;
 			end
 
 			LUI:begin		// GPR[rt] ← immediate || 0*16
 				rfif.wsel = rt;
 				rfif.rWEN = 1;
 				rfif.wdat = {imm , 16'b0};
-				rfif.dmemWEN = 1;
 			end
 
 			J:begin			// PC <= JumpAddr PC ← PCGPRLEN-1..28 || instr_index || 02
@@ -293,9 +278,9 @@ module Control_unit(register_file_if.cu rfif);
 
 		// alu i type
 			ANDI:begin		// GPR[rt] ← GPR[rs] AND immediate
-				rfif.rsel2 = rs;
-				rfif.oprnd2 = rfif.rdat2;
-				rfif.oprnd1 = {16'b0 , imm};	// zero extend
+				rfif.rsel1 = rs;
+				rfif.oprnd1 = rfif.rdat1;
+				rfif.oprnd2 = {16'b0 , imm};	// zero extend
 
 				rfif.alucode = ALU_AND;
 
@@ -305,9 +290,9 @@ module Control_unit(register_file_if.cu rfif);
 			end
 
 			ORI:begin		// GPR[rt] ← GPR[rs] or immediate
-				rfif.rsel2 = rs;
-				rfif.oprnd2 = rfif.rdat2;
-				rfif.oprnd1 = {16'b0 , imm};	// zero extend
+				rfif.rsel1 = rs;
+				rfif.oprnd1 = rfif.rdat1;
+				rfif.oprnd2 = {16'b0 , imm};	// zero extend
 
 				rfif.alucode = ALU_OR;
 
@@ -317,9 +302,9 @@ module Control_unit(register_file_if.cu rfif);
 			end
 
 			XORI:begin		// R[rt] <= R[rs] XOR ZeroExtImm
-				rfif.rsel2 = rs;
-				rfif.oprnd2 = rfif.rdat2;
-				rfif.oprnd1 = {16'b0 , imm};	// zero extend
+				rfif.rsel1 = rs;
+				rfif.oprnd1 = rfif.rdat1;
+				rfif.oprnd2 = {16'b0 , imm};	// zero extend
 
 				rfif.alucode = ALU_XOR;
 
@@ -329,12 +314,12 @@ module Control_unit(register_file_if.cu rfif);
 			end
 
 			ADDIU:begin		// GPR[rt] ← GPR[rs] + sign_extend(immediate)
-				rfif.rsel2 = rs;
-				rfif.oprnd2 = rfif.rdat2;
+				rfif.rsel1 = rs;
+				rfif.oprnd1 = rfif.rdat1;
 				if(imm[15] == 1'b1)begin
-					rfif.oprnd1 = {16'b1111111111111111 , imm};
+					rfif.oprnd2 = {16'hffff , imm};
 				end else begin
-					rfif.oprnd1 = {16'b0 , imm};
+					rfif.oprnd2 = {16'b0 , imm};
 				end
 				rfif.alucode = ALU_ADD;
 				rfif.wsel = rt;
@@ -355,7 +340,7 @@ module Control_unit(register_file_if.cu rfif);
 					PC4EN = 0;
 					// sign extend
 					if(offset[15])begin
-						PCelse = PC4+{14'd11111111111111 , offset , 2'b00};
+						PCelse = PC4+{14'b11111111111111 , offset , 2'b00};
 					end else begin
 						PCelse = PC4+{14'b0 , offset , 2'b00};
 					end
@@ -388,12 +373,8 @@ module Control_unit(register_file_if.cu rfif);
 				end
 			end
 
-			SLTI:begin		// GPR[rd] ← (GPR[rs] < GPR[rt]) , oprnd1 < oprnd2
-				if(imm[15])begin
-					rfif.oprnd2 = {16'd1 , imm};
-				end else begin
-					rfif.oprnd2 = {16'b0 , imm};
-				end
+			SLTI:begin		// GPR[rt] ← (GPR[rs] < imm) , oprnd1 < oprnd2
+				rfif.oprnd2 = immext;
 
 				rfif.alucode = ALU_SLT;
 
@@ -402,14 +383,11 @@ module Control_unit(register_file_if.cu rfif);
 
 				rfif.wsel = rt;
 				rfif.wdat = rfif.alurst;
+				rfif.rWEN = 1;
 			end
 
-			SLTIU:begin		// GPR[rd] ← (GPR[rs] < GPR[rt]) , oprnd1 < oprnd2
-				if(imm[15])begin
-					rfif.oprnd2 = {16'd1 , imm};
-				end else begin
-					rfif.oprnd2 = {16'b0 , imm};
-				end
+			SLTIU:begin		// GPR[rt] ← (GPR[rs] < GPR[rt]) , oprnd1 < oprnd2
+				rfif.oprnd2 = immext;
 
 				rfif.alucode = ALU_SLTU;
 
@@ -418,20 +396,13 @@ module Control_unit(register_file_if.cu rfif);
 
 				rfif.wsel = rt;
 				rfif.wdat = rfif.alurst;
+				rfif.rWEN = 1;
 			end
 
 			HALT:begin		// trapped
 				PC4EN = 0;
 				PCelse = rfif.PC;
-			end
-
-			LL:begin
-
-
-			end
-
-			SC:begin
-
+				rfif.halt = 1;
 			end
 
 			default:begin
@@ -446,10 +417,11 @@ module Control_unit(register_file_if.cu rfif);
 				rfif.wdat = 'bx;
 				rfif.dmemaddr = 'bx;
 
-				rfif.imemREN = 0;
-				rfif.dmemREN = 0;
-				rfif.dmemWEN = 0;
+				// rfif.cu_imemREN = 0;// probably not needed for this unit
+				rfif.cu_dmemREN = 0;
+				rfif.cu_dmemWEN = 0;
 				rfif.rWEN = 0;
+				rfif.halt = 0;
 			end
 		endcase
 	end

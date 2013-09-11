@@ -7,74 +7,53 @@ import cpu_types_pkg::*;
 `include "register_file_if.vh"
 
 
-module fake_imem(datapath_cache_if.fi dpif);
+module fake_imem(register_file_if.fi rfif);
 
-	logic [5:0] op;
-	logic [4:0] rs;
-	logic [4:0] rt;
-	logic [4:0] rd;
-	logic [4:0] sa;
-	logic [5:0] spe;
-
-	assign dpif.imemload[31:26] = op;
-	assign dpif.imemload[25:21] = rs;
-	assign dpif.imemload[20:16] = rt;
-	assign dpif.imemload[15:11] = rd;
-	assign dpif.imemload[10:06] = sa;
-	assign dpif.imemload[05:00] = spe;
 
 	always_comb begin
-		op = 0;
-		rs = 0;
-		rt = 0;
-		rd = 0;
-		sa = 0;
-		spe = 0;
-		casez(dpif.imemaddr)
-32'h00:{op,rs,rt,rd,sa,spe}=32'h241D0FFC;
-32'h04:{op,rs,rt,rd,sa,spe}=32'h0C00000A;
-32'h08:{op,rs,rt,rd,sa,spe}=32'h24010011;
-32'h0C:{op,rs,rt,rd,sa,spe}=32'h27BDFFFC;
-32'h10:{op,rs,rt,rd,sa,spe}=32'hAFA10000;
-32'h14:{op,rs,rt,rd,sa,spe}=32'h24010003;
-32'h18:{op,rs,rt,rd,sa,spe}=32'h27BDFFFC;
-32'h1C:{op,rs,rt,rd,sa,spe}=32'hAFA10000;
-32'h20:{op,rs,rt,rd,sa,spe}=32'h0C00000A;
-32'h24:{op,rs,rt,rd,sa,spe}=32'hFFFFFFFF;
-32'h28:{op,rs,rt,rd,sa,spe}=32'h27A10000;
-32'h2C:{op,rs,rt,rd,sa,spe}=32'h27BDFFFC;
-32'h30:{op,rs,rt,rd,sa,spe}=32'hAFBF0000;
-32'h34:{op,rs,rt,rd,sa,spe}=32'h27BDFFFC;
-32'h38:{op,rs,rt,rd,sa,spe}=32'hAFA20000;
-32'h3C:{op,rs,rt,rd,sa,spe}=32'h27BDFFFC;
-32'h40:{op,rs,rt,rd,sa,spe}=32'hAFA30000;
-32'h44:{op,rs,rt,rd,sa,spe}=32'h27BDFFFC;
-32'h48:{op,rs,rt,rd,sa,spe}=32'hAFA40000;
-32'h4C:{op,rs,rt,rd,sa,spe}=32'h27BDFFFC;
-32'h50:{op,rs,rt,rd,sa,spe}=32'hAFA50000;
-32'h54:{op,rs,rt,rd,sa,spe}=32'h8C220000;
-32'h58:{op,rs,rt,rd,sa,spe}=32'h8C230004;
-32'h5C:{op,rs,rt,rd,sa,spe}=32'h00052824;
-32'h60:{op,rs,rt,rd,sa,spe}=32'h30640001;
-32'h64:{op,rs,rt,rd,sa,spe}=32'h10800001;
-32'h68:{op,rs,rt,rd,sa,spe}=32'h00A22821;
-32'h6C:{op,rs,rt,rd,sa,spe}=32'h00401040;
-32'h70:{op,rs,rt,rd,sa,spe}=32'h00601842;
-32'h74:{op,rs,rt,rd,sa,spe}=32'h1403FFFA;
-32'h78:{op,rs,rt,rd,sa,spe}=32'hAC250004;
-32'h7C:{op,rs,rt,rd,sa,spe}=32'h8FA50000;
-32'h80:{op,rs,rt,rd,sa,spe}=32'h27BD0004;
-32'h84:{op,rs,rt,rd,sa,spe}=32'h8FA40000;
-32'h88:{op,rs,rt,rd,sa,spe}=32'h27BD0004;
-32'h8C:{op,rs,rt,rd,sa,spe}=32'h8FA30000;
-32'h90:{op,rs,rt,rd,sa,spe}=32'h27BD0004;
-32'h94:{op,rs,rt,rd,sa,spe}=32'h8FA20000;
-32'h98:{op,rs,rt,rd,sa,spe}=32'h27BD0004;
-32'h9C:{op,rs,rt,rd,sa,spe}=32'h8FBF0000;
-32'hA0:{op,rs,rt,rd,sa,spe}=32'h27BD0004;
-32'hA4:{op,rs,rt,rd,sa,spe}=32'h03E00008;
+		casez(rfif.PC)
+32'h00*4:rfif.imemload = 32'h10220003;
+32'h01*4:rfif.imemload = 32'h14220002;
+32'h02*4:rfif.imemload = 32'hFFFFFFFF;
+32'h03*4:rfif.imemload = 32'h00400008;
+32'h04*4:rfif.imemload = 32'h08000005;
+32'h05*4:rfif.imemload = 32'h0C000007;
+32'h06*4:rfif.imemload = 32'h08000005;
+32'h07*4:rfif.imemload = 32'hAC240003;
+32'h08*4:rfif.imemload = 32'h8C430003;
+32'h09*4:rfif.imemload = 32'hAC240003;
+32'h0A*4:rfif.imemload = 32'hFFFFFFFF;
+
+/*32'h00:rfif.imemload=32'h24030017;
+32'h04:rfif.imemload=32'h24010071;
+32'h08:rfif.imemload=32'h00611021;
+32'h0C:rfif.imemload=32'h00611024;
+32'h10:rfif.imemload=32'h00611027;
+32'h14:rfif.imemload=32'h00611025;
+32'h18:rfif.imemload=32'h0061102A;
+32'h1C:rfif.imemload=32'h0061102B;
+32'h20:rfif.imemload=32'h006010C0;
+32'h24:rfif.imemload=32'h006010C2;
+32'h28:rfif.imemload=32'h00611023;
+32'h2C:rfif.imemload=32'h00611026;
+32'h30:rfif.imemload=32'h24620017;
+32'h34:rfif.imemload=32'h30620017;
+32'h38:rfif.imemload=32'h3C020017;
+32'h3C:rfif.imemload=32'h34620017;
+32'h40:rfif.imemload=32'h28620017;
+32'h44:rfif.imemload=32'h2C620017;
+32'h48:rfif.imemload=32'h38620017;
+32'h4C:rfif.imemload=32'hFFFFFFFF;
+32'h50:rfif.imemload=32'h10220005;
+32'h54:rfif.imemload=32'h14220004;
+32'h58:rfif.imemload=32'h0800001A;
+32'h5C:rfif.imemload=32'h0C00001A;
+32'h60:rfif.imemload=32'hFFFFFFFF;
+32'h64:rfif.imemload=32'h00400008;
+32'h68:rfif.imemload=32'hFFFFFFFF;*/
+default:rfif.imemload=32'hFFFFFFFF;
 		endcase
-		/*casez(dpif.imemaddr)
+		/*casez(rfif.imemaddr)
 			default:begin
 				op = 0;
 				rs = 0;
