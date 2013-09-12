@@ -1,61 +1,70 @@
+/*
+	hazard unit
+	Mingfei Huang
+	huang243@purdue.edu
+
+*/
+// mapped needs this
+`include "control_hazard_alu_if.vh"
+
 module hazard_unit(
 	input logic CLK , nRST,
-	register_file_if.hu rfif);
+	control_hazard_alu_if.hu chaif);
 
 	logic imemREN_nxt , dmemREN_nxt , dmmeWEN_nxt;
-	assign imemREN_nxt = ~rfif.ihit;
+	assign imemREN_nxt = ~chaif.ihit;
 
 
 	logic instEN_nxt;
 
 	always_comb begin
-		if(rfif.ihit)begin
+		if(chaif.ihit)begin
 			instEN_nxt = 1;
 		end else begin
 			instEN_nxt  =0;
 		end
 	end
-	assign rfif.instEN = rfif.ihit/*&(~(rfif.cu_dmemWEN|rfif.cu_dmemREN)) | rfif.dhit*/;
+	assign chaif.instEN = chaif.ihit/*&(~(chaif.cu_dmemWEN|chaif.cu_dmemREN)) | chaif.dhit*/;
 
 	logic dfin;
 
 	always_ff@(posedge CLK or negedge nRST) begin : proc_
 		if(~nRST) begin
-			rfif.imemREN	= 0;
-			rfif.dmemREN	= 0;
-			rfif.dmemWEN	= 0;
-			//rfif.instEN		= 0;
+			chaif.imemREN	= 0;
+			chaif.dmemREN	= 0;
+			chaif.dmemWEN	= 0;
+			//chaif.instEN		= 0;
 			dfin = 0;
-			rfif.ilast = 0;
+			chaif.ilast = 0;
 		end else begin
-			rfif.ilast = 0;
-			rfif.imemREN = 1;
-			//rfif.instEN = ilast&(~(rfif.cu_dmemWEN|rfif.cu_dmemREN)) | rfif.dhit;
-			if(!rfif.halt)begin
-			//	rfif.imemREN	= ~(rfif.cu_dmemREN | rfif.cu_dmemWEN);
-				rfif.dmemREN	= rfif.cu_dmemREN & !dfin;
-				rfif.dmemWEN	= rfif.cu_dmemWEN & !dfin;
-				//rfif.instEN		= 0;
-				if(rfif.ihit)begin      // instruction done
-					//rfif.instEN	= 1;
-					rfif.ilast = 1;
-					if(rfif.cu_dmemREN)begin
-						rfif.dmemREN = 1;
-					end else if(rfif.cu_dmemWEN)begin
-						rfif.dmemWEN = 1;
+			chaif.ilast = 0;
+			chaif.imemREN = 1;
+			//chaif.instEN = ilast&(~(chaif.cu_dmemWEN|chaif.cu_dmemREN)) | chaif.dhit;
+			if(!chaif.halt)begin
+			//	chaif.imemREN	= ~(chaif.cu_dmemREN | chaif.cu_dmemWEN);
+				chaif.dmemREN	= chaif.cu_dmemREN & !dfin;
+				chaif.dmemWEN	= chaif.cu_dmemWEN & !dfin;
+				//chaif.instEN		= 0;
+				if(chaif.ihit)begin      // instruction done
+					//chaif.instEN	= 1;
+					chaif.ilast = 1;
+					if(chaif.cu_dmemREN)begin
+						chaif.dmemREN = 1;
+					end else if(chaif.cu_dmemWEN)begin
+						chaif.dmemWEN = 1;
 					end
 					dfin = 0;
-				end else if(rfif.dhit)begin
+				end else if(chaif.dhit)begin
 					dfin = 1;
-					rfif.dmemREN = 0;
-					rfif.dmemWEN = 0;
-					rfif.imemREN = 1;
+					chaif.dmemREN = 0;
+					chaif.dmemWEN = 0;
+					chaif.imemREN = 1;
 				end
 			end else begin
-				rfif.imemREN = 0;
-				rfif.dmemREN = 0;
-				rfif.dmemWEN = 0;
-				//rfif.instEN  = 0;
+				chaif.imemREN = 0;
+				chaif.dmemREN = 0;
+				chaif.dmemWEN = 0;
+				//chaif.instEN  = 0;
 			end
 		end
 	end

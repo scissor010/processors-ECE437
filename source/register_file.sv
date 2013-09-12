@@ -14,7 +14,7 @@ module register_file
 	// decoder
     always_comb begin
         en = 0;
-        if(rfif.rWEN)begin
+        if(rfif.WEN)begin
             casez(rfif.wsel)
                 00: en[00] = 2'b0;  // location 0 has constant 0 value
                 01: en[01] = 2'b1;
