@@ -21,13 +21,14 @@ module system_fpga (
 	output logic [6:0] HEX4,
 	output logic [6:0] HEX5,
 	output logic [6:0] HEX6,
-	output logic [6:0] HEX7
+	output logic [6:0] HEX7,
+	output logic [35:0] GPIO_0,
+	output logic [35:0] GPIO_1
 );
 	// interface
 	system_if   syif();
 	// system
 	system      CPU(CLOCK_50, KEY[3], syif);
-	//system      CPU(KEY[0], KEY[3], syif);
 
 	// signals we should not use
 	assign syif.WEN = 0;
@@ -37,11 +38,18 @@ module system_fpga (
 
 	// map board to system
 	assign LEDG[8] = syif.halt;
-	assign syif.tbCTRL = syif.halt;
-	assign syif.REN = syif.halt;
-	assign syif.addr = {16'b0,SW[15:0]};
+//	assign syif.tbCTRL = syif.halt;
+//	assign syif.REN = syif.halt;
+//	assign syif.addr = {16'b0,SW[15:0]};
 
-//	assign LEDG[7:0] = syif.testPC[7:0];
+
+	// bonus part..
+	assign GPIO_0[35:32] = syif.addr[3:0];
+	assign GPIO_0[31:0] = syif.store;
+	assign GPIO_1[31:0] = syif.load;
+	assign GPIO_1[32] = CLOCK_50;
+	assign GPIO_1[33] = syif.halt;
+
 
 	always_comb
 	begin

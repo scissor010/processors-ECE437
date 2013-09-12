@@ -72,7 +72,7 @@ module datapath (
 	assign PC4 = PC + 4;
 //	assign PCtemp = rfif.instEN?PCnxt:PC;
 	always_comb begin : PC_next_state
-		if(rfif.halt | !rfif.instEN)begin
+		if(rfif.halt | !rfif.ilast)begin
 			PCtemp=PC;
 		end else begin
 			PCtemp=PCnxt;
@@ -108,7 +108,7 @@ module datapath (
 	assign dpif.imemaddr = PC;
 
 	assign dmemload	= dpif.dmemload;
-	//assign imemload = dpif.imemload;
+	assign rfif.imemload = dpif.imemload;
 	assign dpif.imemREN		= rfif.imemREN;
 
 	assign dpif.dmemREN		= rfif.dmemREN;
@@ -130,7 +130,7 @@ module datapath (
 	assign dmemstore = rfif.rdat2;
 	assign rfif.rsel1 = rs;
 	assign rfif.rsel2 = rt;
-	assign rfif.rWEN = rfif.cu_rWEN & (rfif.cu_dmemREN & rfif.dhit) | rfif.cu_rWEN&(!rfif.cu_dmemREN);
+	assign rfif.rWEN = rfif.cu_rWEN & (rfif.cu_dmemREN & rfif.dhit) | rfif.cu_rWEN&(!rfif.cu_dmemREN)&rfif.ilast;
 
 	always_comb begin : oprnd2_mux
 		if(rfif.op2sel == OP2_RDAT)begin

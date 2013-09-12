@@ -26,7 +26,9 @@ module hazard_unit(
 			rfif.dmemWEN	= 0;
 			//rfif.instEN		= 0;
 			dfin = 0;
+			rfif.ilast = 0;
 		end else begin
+			rfif.ilast = 0;
 			rfif.imemREN = 1;
 			//rfif.instEN = ilast&(~(rfif.cu_dmemWEN|rfif.cu_dmemREN)) | rfif.dhit;
 			if(!rfif.halt)begin
@@ -36,6 +38,7 @@ module hazard_unit(
 				//rfif.instEN		= 0;
 				if(rfif.ihit)begin      // instruction done
 					//rfif.instEN	= 1;
+					rfif.ilast = 1;
 					if(rfif.cu_dmemREN)begin
 						rfif.dmemREN = 1;
 					end else if(rfif.cu_dmemWEN)begin

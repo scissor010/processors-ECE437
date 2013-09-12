@@ -32,10 +32,10 @@ interface register_file_if;
 	word_t cu_dmemWEN;/*
 	word_t dmemstore;
 	word_t dmemaddr;
-	word_t imemload;
 	word_t dmemload;
 	word_t PCnxt;*/
 
+	word_t imemload;
 	//alu part
 	word_t oprnd1 , oprnd2 , alurst;
 	logic [3:0] alucode;
@@ -46,6 +46,7 @@ interface register_file_if;
 	logic [1:0] wseles;
 	logic [1:0] wdat_sel;
 	logic [1:0] PCsel;
+	logic ilast;
 
 	modport alu(
 		input oprnd1 , oprnd2 , alucode,
@@ -63,6 +64,7 @@ interface register_file_if;
 	modport cu(
 		input inst,								// from memory
 		zroflg,							 		// alu flags
+		imemload,
 		output
 		cu_rWEN,									//	 to register file
 		alucode,								// to alu
@@ -76,7 +78,7 @@ interface register_file_if;
 	// hazard unit
 	modport hu(
 		input ihit , dhit, cu_dmemWEN , cu_imemREN , cu_dmemREN, halt,
-		output imemREN, dmemREN, dmemWEN , instEN
+		output imemREN, dmemREN, dmemWEN , instEN , ilast
 	);
 	word_t PC;
 	// fake inst mem

@@ -14,8 +14,8 @@ module Control_unit(register_file_if.cu rfif);
 logic [5:0] opcode;
 logic [5:0] rcode;
 
-assign opcode		 = dpif.imemload[31:26];
-assign rcode		 = dpif.imemload[5:0];
+assign opcode		 = rfif.imemload[31:26];
+assign rcode		 = rfif.imemload[5:0];
 
 // instruction decode
 	always_comb begin
@@ -171,7 +171,7 @@ assign rcode		 = dpif.imemload[5:0];
 				rfif.PCsel = PC_JI;
 				rfif.PC4EN = 0;
 
-				rfif.wseles = 31;
+				rfif.wseles = WSEL_31;
 				rfif.cu_rWEN = 1;
 				rfif.wdat_sel = WDAT_PC4;
 			end
