@@ -41,7 +41,7 @@ module system_fpga (
 	assign syif.REN = syif.halt;
 	assign syif.addr = {16'b0,SW[15:0]};
 
-	assign LEDG[7:0] = syif.testPC[7:0];
+//	assign LEDG[7:0] = syif.testPC[7:0];
 
 	always_comb
 	begin

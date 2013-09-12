@@ -52,7 +52,7 @@ module datapath (
 		end
 	end
 	logic talh;
-	always_ff@(negedge CLK or negedge nRST) begin
+	always_ff@(posedge CLK or negedge nRST) begin
 		if(~nRST) begin
 				talh <= 0;
 		end else begin
@@ -91,5 +91,5 @@ module datapath (
 
 	assign rfif.dhit = dpif.dhit;
 	assign rfif.ihit = dpif.ihit;
-
+	assign rfif.rWEN = rfif.cu_rWEN & (rfif.cu_dmemREN & rfif.dhit) | rfif.cu_rWEN&(!rfif.cu_dmemREN);
 endmodule

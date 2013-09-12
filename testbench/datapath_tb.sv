@@ -126,8 +126,9 @@ module datapath_tb;
 		printmsg(spe , op);
 
 		$monitor("
-PC:%d:
+PC:%3d %3h:
 %s rs=%d rt=%d rd=%d sa=%d %s
+reg%2d:  %d:%h:%b
 reg%2d:  %d:%h:%b
 reg%2d:  %d:%h:%b
 reg%2d:  %d:%h:%b
@@ -139,7 +140,7 @@ dmemaddr= %b
 imemREN = %b
 dmemREN = %b
 dmemWEN = %b"
-, dpif.imemaddr
+, dpif.imemaddr, dpif.imemaddr
 ,opc , rs , rt , rd , sa , spec
 , 00 , DP_DUT.regfile.data[00] , DP_DUT.regfile.data[00] , DP_DUT.regfile.data[00]
 , 01 , DP_DUT.regfile.data[01] , DP_DUT.regfile.data[01] , DP_DUT.regfile.data[01]
@@ -147,6 +148,7 @@ dmemWEN = %b"
 , 03 , DP_DUT.regfile.data[03] , DP_DUT.regfile.data[03] , DP_DUT.regfile.data[03]
 , 04 , DP_DUT.regfile.data[04] , DP_DUT.regfile.data[04] , DP_DUT.regfile.data[04]
 , 05 , DP_DUT.regfile.data[05] , DP_DUT.regfile.data[05] , DP_DUT.regfile.data[05]
+, 31 , DP_DUT.regfile.data[31] , DP_DUT.regfile.data[31] , DP_DUT.regfile.data[31]
 /*
 	, 06 , DP_DUT.regfile.data[06] , DP_DUT.regfile.data[06]
 	, 07 , DP_DUT.regfile.data[07] , DP_DUT.regfile.data[07]

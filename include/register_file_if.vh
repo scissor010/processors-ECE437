@@ -19,15 +19,20 @@ interface register_file_if;
 	import cpu_types_pkg::*;
 
 	logic     rWEN;		// register write enable
+	logic 	  cu_rWEN;	// rWEN = cu_rWEN & dhit
 	regbits_t wsel, rsel1, rsel2;
 	word_t    wdat, rdat1, rdat2;
 
 	word_t inst;	// one line of instruction read from memory by PC
 
-	word_t imemREN;
+	logic imemREN;
+	logic dmemREN;
+	logic dmemWEN;
+	logic ihit,dhit;
+	logic cu_imemREN, cu_dmemREN, cu_dmemWEN;
+	logic halt;
+	logic instEN;
 	word_t PC;
-	word_t dmemREN;
-	word_t dmemWEN;
 	word_t dmemstore;
 	word_t dmemaddr;
 	word_t imemload;
@@ -38,6 +43,12 @@ interface register_file_if;
 	word_t oprnd1 , oprnd2 , alurst;
 	logic [3:0] alucode;
 	logic vldflg , cryflg , ngtflg , zroflg;
+
+	// fake inst mem
+	modport fi(
+		input PC,
+		output imemload
+	);
 
 	modport alu(
 		input oprnd1 , oprnd2 , alucode,
@@ -52,15 +63,21 @@ interface register_file_if;
 		vldflg , cryflg , ngtflg , zroflg, // alu flags
 		imemload, dmemload,		// from datapath/memory
 		PC,						// from datapath/memory
-		output rWEN , wsel , rsel1 , rsel2 , wdat,	//	 to register file
+		output cu_rWEN , wsel , rsel1 , rsel2 , wdat,	//	 to register file
 		oprnd1 , oprnd2 , alucode,		// to alu
-		imemREN, dmemREN, dmemWEN, dmemstore, dmemaddr, PCnxt	// to datapath/memory
+		/*cu_imemREN,*/ cu_dmemREN, cu_dmemWEN, dmemstore, dmemaddr, PCnxt, halt	// to datapath/memory
 	);
 
 	// register file ports
 	modport rf (
 		input   rWEN, wsel, rsel1, rsel2, wdat,
 		output  rdat1, rdat2
+	);
+
+	// hazard unit
+	modport hu(
+		input ihit , dhit, cu_dmemWEN , cu_imemREN , cu_dmemREN, halt,
+		output imemREN, dmemREN, dmemWEN , instEN
 	);
 endinterface
 

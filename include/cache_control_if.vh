@@ -18,7 +18,8 @@ interface cache_control_if;
 	import cpu_types_pkg::*;
 
 	// access with cpuid on each processor
-	parameter CPUS = 2;
+//	parameter CPUS = 2;
+	parameter CPUS = 1;
 
 	// arbitration
 	logic   [CPUS-1:0]       iwait, dwait, iREN, dREN, dWEN;
@@ -42,6 +43,7 @@ interface cache_control_if;
 	word_t                  ramaddr, ramstore, ramload;
 
 	// controller ports to ram and caches
+	// MEMORY CONTROL!!!
 	modport cc (
 						// cache inputs
 		input   iREN, dREN, dWEN, dstore, iaddr, daddr,

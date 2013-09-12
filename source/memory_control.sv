@@ -35,7 +35,7 @@ module memory_control (
 				ccif.dwait = 1;
 			end
 			ACCESS:begin
-				ccif.iwait = ccif.dREN;
+				ccif.iwait = ccif.dREN | ccif.dWEN;
 			end
 			ERROR:begin
 	 			ccif.iwait = 1;
@@ -57,9 +57,9 @@ module memory_control (
 			rdata <= ccif.ramload;
 		end
 	end
-	assign ccif.dload = rdata;
+//	assign ccif.dload = rdata;
  	always_comb begin
- 	//	ccif.dload = ccif.ramload;
+ 		ccif.dload = ccif.ramload;
  		ccif.iload = ccif.ramload;
  		ccif.ramstore = 'bx;
  		ccif.ramaddr = ccif.iaddr;

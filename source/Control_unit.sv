@@ -54,7 +54,7 @@ module Control_unit(register_file_if.cu rfif);
 		// rfif.cu_imemREN = 0;// probably not needed for this unit
 		rfif.cu_dmemREN = 0;
 		rfif.cu_dmemWEN = 0;
-		rfif.rWEN = 0;
+		rfif.cu_rWEN = 0;
 
 		rfif.dmemstore = 32'dx;	// only SW uses dememstore
 		rfif.halt = 0;
@@ -68,7 +68,7 @@ module Control_unit(register_file_if.cu rfif);
 			rfif.oprnd2 = 'dx;
 			rfif.wsel = 'dx;
 			rfif.wdat = 'dx;
-			rfif.rWEN = 0;
+			rfif.cu_rWEN = 0;
 			casez(rcode)
 				SLL:begin		// GPR[rd] ← GPR[rs] << sa , // oprnd1 is GPR[rs],oprnd2 is sa
 					rfif.alucode = ALU_SLL;
@@ -77,7 +77,7 @@ module Control_unit(register_file_if.cu rfif);
 					rfif.oprnd2 = sa;
 					rfif.wsel = rd;		// GPR[rd]
 					rfif.wdat = rfif.alurst;
-					rfif.rWEN = 1;
+					rfif.cu_rWEN = 1;
 				end
 
 				SRL:begin		// GPR[rd] ← GPR[rs] >> sa , // oprnd1 is GPR[rs],oprnd2 is sa
@@ -90,7 +90,7 @@ module Control_unit(register_file_if.cu rfif);
 
 					rfif.wsel = rd;		// GPR[rd]
 					rfif.wdat = rfif.alurst;
-					rfif.rWEN = 1;
+					rfif.cu_rWEN = 1;
 				end
 
 				JR:begin			//  PC <= R[rs]
@@ -110,7 +110,7 @@ module Control_unit(register_file_if.cu rfif);
 
 					rfif.wsel = rd;
 					rfif.wdat = rfif.alurst;
-					rfif.rWEN = 1;
+					rfif.cu_rWEN = 1;
 				end
 
 				SUBU:begin		// GPR[rd] ← GPR[rs] − GPR[rt] , oprnd1 +- oprnd2
@@ -124,7 +124,7 @@ module Control_unit(register_file_if.cu rfif);
 
 					rfif.wsel = rd;
 					rfif.wdat = rfif.alurst;
-					rfif.rWEN = 1;
+					rfif.cu_rWEN = 1;
 				end
 
 				AND:begin		// GPR[rd] ← GPR[rs] and GPR[rt]
@@ -138,7 +138,7 @@ module Control_unit(register_file_if.cu rfif);
 
 					rfif.wsel = rd;
 					rfif.wdat = rfif.alurst;
-					rfif.rWEN = 1;
+					rfif.cu_rWEN = 1;
 				end
 
 				OR:begin			// GPR[rd] ← GPR[rs] or GPR[rt]
@@ -152,7 +152,7 @@ module Control_unit(register_file_if.cu rfif);
 
 					rfif.wsel = rd;
 					rfif.wdat = rfif.alurst;
-					rfif.rWEN = 1;
+					rfif.cu_rWEN = 1;
 				end
 
 				XOR:begin		// GPR[rd] ← GPR[rs] XOR GPR[rt]
@@ -166,7 +166,7 @@ module Control_unit(register_file_if.cu rfif);
 
 					rfif.wsel = rd;
 					rfif.wdat = rfif.alurst;
-					rfif.rWEN = 1;
+					rfif.cu_rWEN = 1;
 				end
 
 				NOR:begin		// GPR[rd] ← GPR[rs] nor GPR[rt]
@@ -180,7 +180,7 @@ module Control_unit(register_file_if.cu rfif);
 
 					rfif.wsel = rd;
 					rfif.wdat = rfif.alurst;
-					rfif.rWEN = 1;
+					rfif.cu_rWEN = 1;
 				end
 
 				SLT:begin		// GPR[rd] ← (GPR[rs] < GPR[rt]) , oprnd1 < oprnd2
@@ -194,7 +194,7 @@ module Control_unit(register_file_if.cu rfif);
 
 					rfif.wsel = rd;
 					rfif.wdat = rfif.alurst;
-					rfif.rWEN = 1;
+					rfif.cu_rWEN = 1;
 				end
 
 				SLTU:begin		// GPR[rd] ← (GPR[rs] < GPR[rt])
@@ -208,7 +208,7 @@ module Control_unit(register_file_if.cu rfif);
 
 					rfif.wsel = rd;
 					rfif.wdat = rfif.alurst;
-					rfif.rWEN = 1;
+					rfif.cu_rWEN = 1;
 				end
 
 				default:begin
@@ -219,7 +219,7 @@ module Control_unit(register_file_if.cu rfif);
 					rfif.rsel2  = 'bx;
 					rfif.wsel = 'bx;
 					rfif.wdat = 'bx;
-					rfif.rWEN = 0;
+					rfif.cu_rWEN = 0;
 				end
 			endcase
 		end
@@ -252,13 +252,13 @@ module Control_unit(register_file_if.cu rfif);
 				rfif.alucode = ALU_ADD;
 				rfif.oprnd2 = immext;
 				rfif.wdat = rfif.dmemload;
-				rfif.rWEN = 1;
+				rfif.cu_rWEN = 1;
 				rfif.cu_dmemREN = 1;
 			end
 
 			LUI:begin		// GPR[rt] ← immediate || 0*16
 				rfif.wsel = rt;
-				rfif.rWEN = 1;
+				rfif.cu_rWEN = 1;
 				rfif.wdat = {imm , 16'b0};
 			end
 
@@ -272,7 +272,7 @@ module Control_unit(register_file_if.cu rfif);
 				PC4EN = 0;
 
 				rfif.wsel = 31;
-				rfif.rWEN = 1;
+				rfif.cu_rWEN = 1;
 				rfif.wdat = PC4;
 			end
 
@@ -285,7 +285,7 @@ module Control_unit(register_file_if.cu rfif);
 				rfif.alucode = ALU_AND;
 
 				rfif.wsel = rt;
-				rfif.rWEN = 1;
+				rfif.cu_rWEN = 1;
 				rfif.wdat = rfif.alurst;
 			end
 
@@ -297,7 +297,7 @@ module Control_unit(register_file_if.cu rfif);
 				rfif.alucode = ALU_OR;
 
 				rfif.wsel = rt;
-				rfif.rWEN = 1;
+				rfif.cu_rWEN = 1;
 				rfif.wdat = rfif.alurst;
 			end
 
@@ -309,7 +309,7 @@ module Control_unit(register_file_if.cu rfif);
 				rfif.alucode = ALU_XOR;
 
 				rfif.wsel = rt;
-				rfif.rWEN = 1;
+				rfif.cu_rWEN = 1;
 				rfif.wdat = rfif.alurst;
 			end
 
@@ -323,7 +323,7 @@ module Control_unit(register_file_if.cu rfif);
 				end
 				rfif.alucode = ALU_ADD;
 				rfif.wsel = rt;
-				rfif.rWEN = 1;
+				rfif.cu_rWEN = 1;
 				rfif.wdat = rfif.alurst;
 			end
 
@@ -383,7 +383,7 @@ module Control_unit(register_file_if.cu rfif);
 
 				rfif.wsel = rt;
 				rfif.wdat = rfif.alurst;
-				rfif.rWEN = 1;
+				rfif.cu_rWEN = 1;
 			end
 
 			SLTIU:begin		// GPR[rt] ← (GPR[rs] < GPR[rt]) , oprnd1 < oprnd2
@@ -396,7 +396,7 @@ module Control_unit(register_file_if.cu rfif);
 
 				rfif.wsel = rt;
 				rfif.wdat = rfif.alurst;
-				rfif.rWEN = 1;
+				rfif.cu_rWEN = 1;
 			end
 
 			HALT:begin		// trapped
@@ -420,7 +420,7 @@ module Control_unit(register_file_if.cu rfif);
 				// rfif.cu_imemREN = 0;// probably not needed for this unit
 				rfif.cu_dmemREN = 0;
 				rfif.cu_dmemWEN = 0;
-				rfif.rWEN = 0;
+				rfif.cu_rWEN = 0;
 				rfif.halt = 0;
 			end
 		endcase

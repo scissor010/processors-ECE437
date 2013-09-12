@@ -24,11 +24,11 @@ interface cpu_ram_if;
 	logic               memREN, memWEN;
 	word_t              memaddr, memstore;
 
-
+	word_t testPC;
 	// cpu ports
 	modport cpu (
 		input   ramstate, ramload,
-		output  memaddr, memREN, memWEN, memstore
+		output  memaddr, memREN, memWEN, memstore, testPC
 	);
 
 	// ram ports
