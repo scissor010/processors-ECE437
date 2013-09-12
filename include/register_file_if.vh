@@ -19,53 +19,37 @@ interface register_file_if;
 	import cpu_types_pkg::*;
 
 	logic     rWEN;		// register write enable
-	logic 	  cu_rWEN;	// rWEN = cu_rWEN & dhit
+	logic 	  cu_rWEN;
 	regbits_t wsel, rsel1, rsel2;
 	word_t    wdat, rdat1, rdat2;
 
 	word_t inst;	// one line of instruction read from memory by PC
 
-	logic imemREN;
-	logic dmemREN;
-	logic dmemWEN;
-	logic ihit,dhit;
-	logic cu_imemREN, cu_dmemREN, cu_dmemWEN;
-	logic halt;
-	logic instEN;
-	word_t PC;
+	//word_t PC;
+	word_t dmemREN;
+	word_t dmemWEN;
+	word_t cu_dmemREN;
+	word_t cu_dmemWEN;/*
 	word_t dmemstore;
 	word_t dmemaddr;
 	word_t imemload;
 	word_t dmemload;
-	word_t PCnxt;
+	word_t PCnxt;*/
 
 	//alu part
 	word_t oprnd1 , oprnd2 , alurst;
 	logic [3:0] alucode;
 	logic vldflg , cryflg , ngtflg , zroflg;
-
-	// fake inst mem
-	modport fi(
-		input PC,
-		output imemload
-	);
+	logic PC4EN;
+	logic [1:0] op2sel;
+	logic [1:0] extmode;
+	logic [1:0] wseles;
+	logic [1:0] wdat_sel;
+	logic [1:0] PCsel;
 
 	modport alu(
 		input oprnd1 , oprnd2 , alucode,
 		output alurst , vldflg , cryflg , ngtflg , zroflg
-	);
-
-	// control unit ports
-	modport cu(
-		input inst,	// from memory
-		rdat1, rdat2,	// from reg file
-		alurst,		// from alu
-		vldflg , cryflg , ngtflg , zroflg, // alu flags
-		imemload, dmemload,		// from datapath/memory
-		PC,						// from datapath/memory
-		output cu_rWEN , wsel , rsel1 , rsel2 , wdat,	//	 to register file
-		oprnd1 , oprnd2 , alucode,		// to alu
-		/*cu_imemREN,*/ cu_dmemREN, cu_dmemWEN, dmemstore, dmemaddr, PCnxt, halt	// to datapath/memory
 	);
 
 	// register file ports
@@ -74,11 +58,46 @@ interface register_file_if;
 		output  rdat1, rdat2
 	);
 
+
+	// control unit ports
+	modport cu(
+		input inst,								// from memory
+		zroflg,							 		// alu flags
+		output
+		cu_rWEN,									//	 to register file
+		alucode,								// to alu
+		cu_dmemREN, cu_dmemWEN,						// to memory enables
+		op2sel,extmode,wseles,wdat_sel,			// source selects
+		PC4EN , PCsel,
+		halt
+	);
+
+	logic ihit , dhit , cu_imemREN , halt , imemREN , instEN;
 	// hazard unit
 	modport hu(
 		input ihit , dhit, cu_dmemWEN , cu_imemREN , cu_dmemREN, halt,
 		output imemREN, dmemREN, dmemWEN , instEN
 	);
+	word_t PC;
+	// fake inst mem
+	modport fi(
+		input PC,
+		output inst
+	);
+
 endinterface
 
 `endif //REGISTER_FILE_IF_VH
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -57,13 +57,11 @@ interface datapath_cache_if;
 		output  dhit, dmemload, flushed
 	);
 
-	/*// fake inst mem
+	// fake inst mem
 	modport fi(
 		input imemaddr,
-		dmemREN,
-		dmemWEN,
 		output imemload
-	);*/
+	);
 endinterface
 
 `endif //DATAPATH_CACHE_IF_VH
