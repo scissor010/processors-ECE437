@@ -22,14 +22,14 @@ assign rcode		 = chaif.imemload[5:0];
 		chaif.halt = 0;
 		chaif.PC4EN	 = 1;
 		chaif.cu_rWEN	 = 'd0;
-		chaif.alucode	 = 'dx;
+		chaif.PCsel	 = PC_NP;
 		chaif.cu_dmemREN	 = 'd0;
 		chaif.cu_dmemWEN	 = 'd0;
+		chaif.alucode	 = 'dx;
 		chaif.op2sel		 = 'dx;
 		chaif.extmode	 = 'dx;
 		chaif.wseles		 = 'dx;
 		chaif.wdat_sel	 = 'dx;
-		chaif.PCsel	 = 'dx;
 		casez(opcode)
 		// alu r type instructions
 		RTYPE:begin
@@ -43,7 +43,7 @@ assign rcode		 = chaif.imemload[5:0];
 			chaif.extmode	 = 'dx;
 			chaif.wseles		 = 'dx;
 			chaif.wdat_sel	 = 'dx;
-			chaif.PCsel		 = 'dx;
+			chaif.PCsel		 = PC_NP;
 			casez(rcode)
 				SLL:begin		// GPR[rd] ← GPR[rs] << sa , // oprnd1 is GPR[rs],oprnd2 is sa
 					chaif.alucode = ALU_SLL;
@@ -137,7 +137,7 @@ assign rcode		 = chaif.imemload[5:0];
 					chaif.extmode	 = 'dx;
 					chaif.wseles		 = 'dx;
 					chaif.wdat_sel	 = 'dx;
-					chaif.PCsel		 = 'dx;
+					chaif.PCsel		 = PC_NP;
 				end
 			endcase
 		end
@@ -263,7 +263,7 @@ assign rcode		 = chaif.imemload[5:0];
 				chaif.extmode	 = 'dx;
 				chaif.wseles		 = 'dx;
 				chaif.wdat_sel	 = 'dx;
-				chaif.PCsel		 = 'dx;
+				chaif.PCsel		 = PC_NP;
 			end
 		endcase
 	end

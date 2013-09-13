@@ -38,7 +38,8 @@ package control_sel_pkg;
 	typedef enum logic [1:0] {
 		PC_JR	 	 = 2'd0,
 		PC_JI	 	 = 2'd1,
-		PC_BR	 	 = 2'd2
+		PC_BR	 	 = 2'd2,
+		PC_NP		 = 2'd3
 	}PCelse_select_t;
 
 endpackage
