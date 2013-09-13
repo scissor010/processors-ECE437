@@ -10,27 +10,28 @@
 import cpu_types_pkg::*;
 
 // mapped needs this
-`include "register_file_if.vh"
+`include "control_hazard_alu_if.vh"
 
 // mapped timing needs this. 1ns is too fast
 `timescale 1 ns / 1 ns
 
-module Alu_tb();
+module Alu_tb;
 
-	register_file_if rfif();
+	control_hazard_alu_if chaif();
 	logic [31:0] tb_oprnd1;
 	logic [31:0] tb_oprnd2;
 	logic [3:0] tb_opcode;
 	logic [31:0] tb_result;
 
-	assign rfif.oprnd1 = tb_oprnd1;
-	assign rfif.oprnd2 = tb_oprnd2;
-	assign rfif.alucode = tb_opcode;
-	assign tb_result = rfif.alurst;
+	assign chaif.oprnd1 = tb_oprnd1;
+	assign chaif.oprnd2 = tb_oprnd2;
+	assign chaif.alucode = tb_opcode;
+	assign tb_result = chaif.alurst;
 
 	int casen;
+	Alu DUT(chaif);
+
 	string spec;
-	Alu DUT(rfif);
 
 	task printmsg (input [3:0] spe);
 		case(spe)
@@ -52,25 +53,16 @@ module Alu_tb();
 
 	initial begin
 
-		$monitor("==================
-casen:%2d
-opcode:%s
-oprnd1:%b
-oprnd2:%b
-vldflg:%b
-cryflg:%b
-ngtflg:%b
-zroflg:%b
-==================\n	"
-,casen
-,opc
-,tb_opcode
-,tb_oprnd1
-,tb_oprnd2
-,rfif.vldflg
-,rfif.cryflg
-,rfif.ngtflg
-,rfif.zroflg);
+		$monitor("==================\ncasen:%2d\nop:%s\noprnd1:%b\noprnd2:%b\nvldflg:%b\ncryflg:%b\nngtflg:%b\nzroflg:%b\n==================\n	"
+		,casen
+		,spec
+		,tb_opcode
+		,tb_oprnd1
+		,tb_oprnd2
+		,chaif.vldflg
+		,chaif.cryflg
+		,chaif.ngtflg
+		,chaif.zroflg);
 
 
 		/*
@@ -241,3 +233,5 @@ zroflg:%b
 		tb_oprnd2 = '1;
 		#(10);
 		printmsg (tb_opcode);
+	end
+endmodule

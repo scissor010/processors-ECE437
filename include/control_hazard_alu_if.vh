@@ -74,17 +74,17 @@ interface control_hazard_alu_if;
 		halt
 	);
 
-	logic ihit , dhit , cu_imemREN , halt , imemREN , instEN;
+	logic ihit , dhit , halt , imemREN , instEN;
 	// hazard unit
 	modport hu(
-		input ihit , dhit, cu_dmemWEN , cu_imemREN , cu_dmemREN, halt,
+		input ihit , dhit, cu_dmemWEN  , cu_dmemREN, halt,
 		output imemREN, dmemREN, dmemWEN , instEN , ilast
 	);
 	word_t PC;
 	// fake inst mem
 	modport fi(
 		input PC,
-		output inst
+		output imemload
 	);
 
 endinterface

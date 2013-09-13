@@ -2,100 +2,75 @@
 	Eric Villasenor
 	evillase@gmail.com
 
-	register file test bench
+	datapath contains register file, control, hazard,
+	muxes, and glue logic for processor
 */
 
-// cpu instructions
+// data path interface
+`include "datapath_cache_if.vh"
+// alu op, mips op, and instruction type
 `include "cpu_types_pkg.vh"
-import cpu_types_pkg::*;
-
-// mapped needs this
+// register file interface
 `include "register_file_if.vh"
-
-// mapped timing needs this. 1ns is too fast
-`timescale 1 ns / 1 ns
+// control unit hazard unit alu interface
+`include "control_hazard_alu_if.vh"
+// control signal selects
+`include "control_sel_pkg.vh"
 
 module Control_unit_tb;
+	// import types
+	import cpu_types_pkg::*;
+	import control_sel_pkg::*;
 
-	logic CLK , nRST;
+	// pc init
+	parameter PC_INIT = 0;
+
+	// start from here is personal code
+
+
+	parameter PERIOD = 10;
+
+	logic CLK;
+	logic nRST;
+	string spec,opc;
+
+// downward interfaces
 	register_file_if rfif();
-
-`ifndef MAPPED
-	Control_unit CU_DUT(rfif);
-	Alu ALU_DUT(rfif);
-	register_file REG_DUT(rfif , CLK , nRST);
-	fake_imem ram(rfif);
-`else
-	Control_unit CU_DUT(
-		rfif.inst,	// from memory
-		rfif.rdat1, rfif.rdat2,	// from reg file
-		rfif.alurst,		// from alu
-		rfif.vldflg , rfif.cryflg , rfif.ngtflg , rfif.zroflg, // alu flags
-		rfif.imemload, rfif.dmemload,		// from datapath/memory
-		rfif.PC,						// from datapath/memory
-		rfif.rWEN , rfif.wsel , rfif.rsel1 , rfif.rsel2 , rfif.wdat,	//	 to register file
-		rfif.oprnd1 , rfif.oprnd2 , rfif.alucode,		// to alu
-		rfif.imemREN, rfif.dmemREN, rfif.dmemWEN, rfif.dmemstore, rfif.dmemaddr, rfif.PCnxt	// to datapath/memory
+	control_hazard_alu_if chaif();
+	register_file regfile(
+		rfif,
+		CLK,
+		nRST
 	);
-	Alu ALU_DUT(
-		rfif.oprnd1 , rfif.oprnd2 , rfif.alucode,
-		rfif.alurst , rfif.vldflg , rfif.cryflg , rfif.ngtflg , rfif.zroflg
-	);
-	register_file REG_DUT(
+	Alu alu(chaif);
+	Control_unit CU(chaif);
+	hazard_unit HU(CLK , nRST , chaif);
+	fake_imem FI(chaif);
 
-		rfif.rWEN, rfif.wsel, rfif.rsel1, rfif.rsel2, rfif.wdat,
-		rfif.rdat1, rfif.rdat2 , CLK , nRST
-	);
-	fake_imem FI_DUT(
-		rfif.PC,
-		rfif.dmemREN,
-		rfif.dmemWEN,
-		rfif.imemload
-	);
-`endif
-
-
-	string spec , opc;
-
-	word_t PC;	// pc current state
-	assign rfif.PC = PC;
-	// program counter stuff
-	always_ff@(posedge CLK or negedge nRST) begin
-		if(~nRST) begin
-			PC <= 0;
-		end else begin
-			PC <= rfif.PCnxt;
-		end
-	end
-
-	logic [5:0] op;
+// temp values for easier expression
+	logic [5:0] opcode;
 	logic [4:0] rs;
 	logic [4:0] rt;
 	logic [4:0] rd;
 	logic [4:0] sa;
-	logic [5:0] spe;
+	logic [15:0] imm;
+	logic [25:0] JumpAddr;
+	logic [15:0] offset;
+	logic [5:0] rcode;
+	logic [31:0] immext;
+	assign opcode		 = chaif.imemload[31:26];
+	assign rs			 = chaif.imemload[25:21];
+	assign rt			 = chaif.imemload[20:16];
+	assign rd			 = chaif.imemload[15:11];
+	assign sa			 = chaif.imemload[10:06];
+	assign imm			 = chaif.imemload[15:0];
+	assign JumpAddr		 = chaif.imemload[25:0];
+	assign offset		 = chaif.imemload[15:0];
+	assign rcode		 = chaif.imemload[5:0];
 
-	assign {op , rs , rt , rd , sa , spe} = rfif.imemload;
-	assign rfif.inst = rfif.imemload;
-
-	parameter PERIOD = 10;
-
-	always begin : proc_
-		#(PERIOD/2);
-		CLK = 0;
-		#(PERIOD/2);
-		CLK = 1;
-	end
-
-	initial begin
-		nRST = 0;
-		#(PERIOD);
-		nRST = 1;
-	end
-
-	task printmsg (input [5:0] spe , [5:0] op);
+	task printmsg (input [5:0] rcode , [5:0] op);
 		if(op==0)begin
-			case(spe)
+			case(rcode)
 				6'b000000:spec="SLL";
 				6'b000010:spec="SRL";
 				6'b001000:spec="JR";
@@ -112,9 +87,9 @@ module Control_unit_tb;
 				default:spec="UNKNOWN";
 			endcase	// alucode print
 		end else begin
-			$sformat(spec, "%6b", spe);
+			$sformat(spec, "%6b", rcode);
 		end
-		case(op)
+		case(opcode)
 			6'b000000:opc="RTYPE";
 			6'b000010:opc="J";
 			6'b000011:opc="JAL";
@@ -154,10 +129,154 @@ module Control_unit_tb;
 		endcase
 	endtask
 
-	always @(rfif.PC , rfif.imemload,rfif.dmemstore,rfif.dmemaddr,rfif.imemREN,rfif.dmemREN,rfif.dmemWEN)
+	always #(PERIOD/2) CLK++;
+
+	initial begin
+		nRST = 0;
+		#PERIOD;
+		nRST = 1;
+	end
+
+// PC
+	word_t PC;	// pc current state
+	assign chaif.PC = PC;
+	// program counter stuff
+	word_t PCtemp , PCnxt , PC4 , PCelse;
+	assign PC4 = PC + 4;
+	always@(chaif.halt , chaif.ilast) begin : PC_next_state
+		if(chaif.halt | !chaif.ilast)begin
+			PCtemp=PC;
+		end else begin
+			PCtemp=PCnxt;
+		end
+	end
+
+	assign PCnxt = chaif.PC4EN?PC4:PCelse;
+	always@(posedge CLK or negedge nRST) begin
+		if(~nRST) begin
+			PC <= PC_INIT;
+		end else begin
+			PC <= PCtemp;
+		end
+	end
+
+	logic haltff;
+	always@(negedge CLK or negedge nRST) begin
+		if(~nRST/* & ~chaif.halt*/) begin
+				haltff <= 0;
+		end else begin if(chaif.halt)begin
+				haltff <= 1;
+			end
+		end
+	end
+
+	word_t dmemstore , dmemload , dmemaddr;
+	logic dhit , ihit;
+	assign chaif.dhit = dhit;
+	assign chaif.ihit = ihit;
+	always begin
+		#(PERIOD*3);
+		ihit = 1;
+		#(PERIOD);
+		ihit = 0;
+	end
+
+	logic dfin;
+	always@(*)begin
+		chaif.ilast = 0;
+		if(~nRST)begin
+			chaif.ilast = 0;
+			dfin = 0;
+		end else if(ihit)begin
+			dfin = 0;
+			chaif.ilast = 1;
+		end else if(dhit)begin
+			dfin = 1;
+		end
+	end
+
+
+
+// datapth muxes
+	assign chaif.oprnd1 = rfif.rdat1;
+	assign dmemaddr = chaif.alurst;
+	assign dmemstore = rfif.rdat2;
+	assign rfif.rsel1 = rs;
+	assign rfif.rsel2 = rt;
+	assign rfif.WEN = chaif.cu_rWEN & (chaif.cu_dmemREN & chaif.dhit) | chaif.cu_rWEN&(!chaif.cu_dmemREN)&chaif.ilast;
+
+	always@(chaif.op2sel) begin : oprnd2_mux
+		if(chaif.op2sel == OP2_RDAT)begin
+			chaif.oprnd2  = rfif.rdat2;
+		end else if(chaif.op2sel == OP2_SA)begin
+			chaif.oprnd2  = sa;
+		end else if(chaif.op2sel == OP2_IMM)begin
+			chaif.oprnd2  = immext;
+		end else begin
+			chaif.oprnd2  = 32'dx;
+		end
+	end
+
+	always@(chaif.extmode) begin : imm_extender
+		if(chaif.extmode == EXT_ZERO)begin
+			immext = {16'b0 , imm};
+		end else if(chaif.extmode == EXT_ONE)begin
+			immext = {16'hffff , imm};
+		end else if(chaif.extmode == EXT_SIGN)begin
+			if(imm[15])begin
+				immext = {16'hffff , imm};
+			end else begin
+				immext = {16'b0 , imm};
+			end
+		end else begin		// impossible case
+			immext = 'dx;
+		end
+	end
+	always@(chaif.wseles) begin : wsel_select
+		if(chaif.wseles == WSEL_RT)begin
+			rfif.wsel  = rt;
+		end else if(chaif.wseles == WSEL_RD)begin
+			rfif.wsel  = rd;
+		end else if(chaif.wseles == WSEL_31)begin
+			rfif.wsel  = 31;
+		end else begin		// impossible case
+			rfif.wsel  = 'dx;
+		end
+	end
+
+	always@(chaif.wdat_sel) begin : wdat_select
+		if(chaif.wdat_sel == WDAT_ALU)begin
+			rfif.wdat  = chaif.alurst;
+		end else if(chaif.wdat_sel == WDAT_LUI)begin
+			rfif.wdat  = {imm , 16'b0};
+		end else if(chaif.wdat_sel == WDAT_MEM)begin
+			rfif.wdat  = dmemload;
+		end else if(chaif.wdat_sel == WDAT_PC4)begin
+			rfif.wdat  = PC4;
+		end else begin
+			rfif.wdat  = 'bx;
+		end
+	end
+
+	always@(chaif.PCsel) begin : PCelse_select
+		if(chaif.PCsel == PC_JR)begin
+			PCelse =  rfif.rdat1;
+		end else if(chaif.PCsel == PC_JI)begin
+			PCelse =  {chaif.PC[31:28] , JumpAddr , 2'b00};
+		end else if(chaif.PCsel == PC_BR)begin
+			PCelse =  PC4+{immext[29:0] , 2'b00};
+		end else begin	// halt , not sure for this..
+			PCelse =  PC;
+		end
+	end
+
+
+
+
+	always @(dmemstore,dmemaddr,chaif.dmemREN,chaif.dmemWEN)
 	begin
 		//#(PERIOD);
-		printmsg(spe , op);
+		printmsg(rcode , opcode);
 
 		$monitor("
 PC:%3d %3h:
@@ -171,25 +290,23 @@ reg%2d:  %d:%h:%b
 reg%2d:  %d:%h:%b
 dmemstore=%b
 dmemaddr= %b
-imemREN = %1b
-dmemREN = %1b
-dmemWEN = %1b
-vldflg cryflg ngtflg zroflg
-  %b     %b     %b     %b"
-, rfif.PC, rfif.PC
+imemREN = %b
+dmemREN = %b
+dmemWEN = %b"
+, PC , PC
 ,opc , rs , rt , rd , sa , spec
-, 00 , REG_DUT.data[00] , REG_DUT.data[00] , REG_DUT.data[00]
-, 01 , REG_DUT.data[01] , REG_DUT.data[01] , REG_DUT.data[01]
-, 02 , REG_DUT.data[02] , REG_DUT.data[02] , REG_DUT.data[02]
-, 03 , REG_DUT.data[03] , REG_DUT.data[03] , REG_DUT.data[03]
-, 04 , REG_DUT.data[04] , REG_DUT.data[04] , REG_DUT.data[04]
-, 05 , REG_DUT.data[05] , REG_DUT.data[05] , REG_DUT.data[05]
-, 31 , REG_DUT.data[31] , REG_DUT.data[31] , REG_DUT.data[31]
-, rfif.dmemstore
-, rfif.dmemaddr
-, rfif.imemREN
-, rfif.dmemREN
-, rfif.dmemWEN
-, rfif.vldflg , rfif.cryflg , rfif.ngtflg , rfif.zroflg);
-end
+, 00 , regfile.data[00] , regfile.data[00] , regfile.data[00]
+, 01 , regfile.data[01] , regfile.data[01] , regfile.data[01]
+, 02 , regfile.data[02] , regfile.data[02] , regfile.data[02]
+, 03 , regfile.data[03] , regfile.data[03] , regfile.data[03]
+, 04 , regfile.data[04] , regfile.data[04] , regfile.data[04]
+, 05 , regfile.data[05] , regfile.data[05] , regfile.data[05]
+, 31 , regfile.data[31] , regfile.data[31] , regfile.data[31]
+, dmemstore
+, dmemaddr
+, chaif.imemREN
+, chaif.dmemREN
+, chaif.dmemWEN);
+
+	end
 endmodule

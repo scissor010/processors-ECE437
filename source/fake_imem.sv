@@ -4,56 +4,57 @@
 import cpu_types_pkg::*;
 
 // mapped needs this
-`include "register_file_if.vh"
+`include "control_hazard_alu_if.vh"
 
 
-module fake_imem(register_file_if.fi rfif);
+module fake_imem(control_hazard_alu_if.fi chaif);
 
 
 	always_comb begin
-		casez(rfif.PC)
-32'h00*4:rfif.imemload = 32'h10220003;
-32'h01*4:rfif.imemload = 32'h14220002;
-32'h02*4:rfif.imemload = 32'hFFFFFFFF;
-32'h03*4:rfif.imemload = 32'h00400008;
-32'h04*4:rfif.imemload = 32'h08000005;
-32'h05*4:rfif.imemload = 32'h0C000007;
-32'h06*4:rfif.imemload = 32'h08000005;
-32'h07*4:rfif.imemload = 32'hAC240003;
-32'h08*4:rfif.imemload = 32'h8C430003;
-32'h09*4:rfif.imemload = 32'hAC240003;
-32'h0A*4:rfif.imemload = 32'hFFFFFFFF;
+		casez(chaif.PC)
+32'h0*4:chaif.imemload=32'h0010220003C7;
+32'h1*4:chaif.imemload=32'h0014220002C3;
+32'h2*4:chaif.imemload=32'h00FFFFFFFFFE;
+32'h3*4:chaif.imemload=32'h0000400008B1;
+32'h4*4:chaif.imemload=32'h0008000005EB;
+32'h5*4:chaif.imemload=32'h000C000007E4;
+32'h6*4:chaif.imemload=32'h0008000005E9;
+32'h7*4:chaif.imemload=32'h00AC24000322;
+32'h8*4:chaif.imemload=32'h008C43000322;
+32'h9*4:chaif.imemload=32'h00AC24000320;
+32'hA*4:chaif.imemload=32'h00FFFFFFFFF6;
 
-/*32'h00:rfif.imemload=32'h24030017;
-32'h04:rfif.imemload=32'h24010071;
-32'h08:rfif.imemload=32'h00611021;
-32'h0C:rfif.imemload=32'h00611024;
-32'h10:rfif.imemload=32'h00611027;
-32'h14:rfif.imemload=32'h00611025;
-32'h18:rfif.imemload=32'h0061102A;
-32'h1C:rfif.imemload=32'h0061102B;
-32'h20:rfif.imemload=32'h006010C0;
-32'h24:rfif.imemload=32'h006010C2;
-32'h28:rfif.imemload=32'h00611023;
-32'h2C:rfif.imemload=32'h00611026;
-32'h30:rfif.imemload=32'h24620017;
-32'h34:rfif.imemload=32'h30620017;
-32'h38:rfif.imemload=32'h3C020017;
-32'h3C:rfif.imemload=32'h34620017;
-32'h40:rfif.imemload=32'h28620017;
-32'h44:rfif.imemload=32'h2C620017;
-32'h48:rfif.imemload=32'h38620017;
-32'h4C:rfif.imemload=32'hFFFFFFFF;
-32'h50:rfif.imemload=32'h10220005;
-32'h54:rfif.imemload=32'h14220004;
-32'h58:rfif.imemload=32'h0800001A;
-32'h5C:rfif.imemload=32'h0C00001A;
-32'h60:rfif.imemload=32'hFFFFFFFF;
-32'h64:rfif.imemload=32'h00400008;
-32'h68:rfif.imemload=32'hFFFFFFFF;*/
-default:rfif.imemload=32'hFFFFFFFF;
+
+/*32'h00:chaif.imemload=32'h24030017;
+32'h04:chaif.imemload=32'h24010071;
+32'h08:chaif.imemload=32'h00611021;
+32'h0C:chaif.imemload=32'h00611024;
+32'h10:chaif.imemload=32'h00611027;
+32'h14:chaif.imemload=32'h00611025;
+32'h18:chaif.imemload=32'h0061102A;
+32'h1C:chaif.imemload=32'h0061102B;
+32'h20:chaif.imemload=32'h006010C0;
+32'h24:chaif.imemload=32'h006010C2;
+32'h28:chaif.imemload=32'h00611023;
+32'h2C:chaif.imemload=32'h00611026;
+32'h30:chaif.imemload=32'h24620017;
+32'h34:chaif.imemload=32'h30620017;
+32'h38:chaif.imemload=32'h3C020017;
+32'h3C:chaif.imemload=32'h34620017;
+32'h40:chaif.imemload=32'h28620017;
+32'h44:chaif.imemload=32'h2C620017;
+32'h48:chaif.imemload=32'h38620017;
+32'h4C:chaif.imemload=32'hFFFFFFFF;
+32'h50:chaif.imemload=32'h10220005;
+32'h54:chaif.imemload=32'h14220004;
+32'h58:chaif.imemload=32'h0800001A;
+32'h5C:chaif.imemload=32'h0C00001A;
+32'h60:chaif.imemload=32'hFFFFFFFF;
+32'h64:chaif.imemload=32'h00400008;
+32'h68:chaif.imemload=32'hFFFFFFFF;*/
+default:chaif.imemload=32'hFFFFFFFF;
 		endcase
-		/*casez(rfif.imemaddr)
+		/*casez(chaif.imemaddr)
 			default:begin
 				op = 0;
 				rs = 0;
